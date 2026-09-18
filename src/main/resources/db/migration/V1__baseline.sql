@@ -1,0 +1,8 @@
+-- Baseline do schema.
+--
+-- A partir daqui, toda alteracao de schema entra como um novo arquivo
+-- V<n>__descricao.sql nesta pasta. Nunca edite uma migration ja aplicada:
+-- o Flyway guarda o checksum e falha na inicializacao se ele mudar.
+--
+-- O SQL deve ser compativel com PostgreSQL. O perfil dev usa H2 em
+-- MODE=PostgreSQL, entao a mesma migration roda nos dois bancos.
