@@ -25,7 +25,6 @@ Aplicação de finanças pessoais em Spring Boot 4 / Java 21.
 - API: http://localhost:8080
 - Console do H2: http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:financeapp`, usuário `sa`, senha vazia)
 - Health: http://localhost:8080/actuator/health
-- Login de dev: `dev` / `dev`
 
 ### Com PostgreSQL — perfil `postgres`
 
@@ -39,6 +38,7 @@ docker compose up -d
 
 - Adminer (cliente web do banco): http://localhost:8081
 - Credenciais e porta saem do `.env` (copie de `.env.example`).
+- `JWT_SECRET` é obrigatório neste perfil (mínimo 32 caracteres); sem ele a aplicação não sobe.
 
 ### Com PostgreSQL descartável (Testcontainers)
 
@@ -76,22 +76,45 @@ O Flyway é a única fonte de verdade do schema; o Hibernate roda com
 - **Nunca edite uma migration já aplicada.** O Flyway guarda o checksum e falha
   no boot se ele mudar; crie uma nova versão.
 
+## API de usuários
+
+| Método | Rota | Acesso | O que faz |
+| --- | --- | --- | --- |
+| POST | `/users` | público | Cadastro (`name`, `email`, `password`, `payDay`) |
+| POST | `/auth/login` | público | Devolve `accessToken` (JWT, 1 hora) |
+| GET | `/users/me` | token | Dados da própria conta |
+| PUT | `/users/me` | token | Altera `name` e `payDay` |
+| PUT | `/users/me/email` | token + `currentPassword` | Troca o e-mail |
+| PUT | `/users/me/password` | token + `currentPassword` | Troca a senha e invalida os tokens antigos |
+| DELETE | `/users/me` | token + `currentPassword` | Apaga a conta |
+
+O token vai no header `Authorization: Bearer <accessToken>`. Não existe rota por id
+nem listagem: cada usuário só enxerga e altera a própria conta.
+
+## Segurança
+
+- Senhas gravadas só como hash BCrypt (`password_hash`); nunca aparecem em respostas ou logs.
+- Senha de 8 a 72 caracteres; e-mail único, normalizado em minúsculas.
+- Login responde o mesmo 401 para e-mail inexistente, senha errada e conta bloqueada.
+- 5 senhas erradas seguidas (no login ou na confirmação de senha atual) bloqueiam a conta por 15 minutos.
+- Trocar a senha ou apagar a conta invalida os tokens já emitidos.
+- Erros no formato `ProblemDetail`: 400 (validação, com `errors` por campo), 401, 403 (senha atual incorreta), 409 (e-mail em uso).
+
+Ainda não há confirmação de e-mail, recuperação de senha nem refresh token.
+
 ## Estrutura
 
 ```
 src/main/java/com/finance/app/financeapp/
-├── FinanceappApplication.java
-└── config/
-    └── SecurityConfig.java      # base de segurança, trocar por auth real
+├── config/         # SecurityConfig, JwtProperties, TokenOwnerValidator
+├── dto/            # entradas e saídas da API (a entidade nunca é serializada)
+├── entities/       # User
+├── repositories/   # UserRepository
+├── resources/      # UserResource, AuthResource e tratamento de erros
+└── services/       # UserService, AuthService, TokenService, PasswordGuard
 src/main/resources/
 ├── application.properties           # config comum
 ├── application-dev.properties       # H2
 ├── application-postgres.properties  # PostgreSQL
 └── db/migration/                    # migrations Flyway
 ```
-
-## Segurança
-
-`SecurityConfig` hoje libera `/h2-console/**` e `/actuator/health/**` e exige
-autenticação no resto, com um usuário fixo de desenvolvimento. É um ponto de
-partida — substitua por autenticação real antes de expor a aplicação.

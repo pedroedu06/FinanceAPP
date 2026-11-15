@@ -1,11 +1,18 @@
 package com.finance.app.financeapp.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
+@Entity
+@Table(name = "users")
 public class User implements Serializable {
 	@Id
 	private UUID id = UUID.randomUUID();
@@ -13,21 +20,54 @@ public class User implements Serializable {
 	@Version
 	private Long version;
 
+	@Column(nullable = false, length = 120)
 	private String name;
+
+	@Column(nullable = false, length = 254, unique = true)
 	private String email;
-	private String password;
+
+	@Column(name = "password_hash", nullable = false)
+	private String passwordHash;
+
+	@Column(name = "pay_day", nullable = false)
 	private Integer payDay;
-	private Instant createdAt ;
+
+	// Sobe a cada troca de senha; tokens emitidos com o valor antigo deixam de valer.
+	@Column(name = "token_version", nullable = false)
+	private int tokenVersion;
+
+	@Column(name = "failed_login_attempts", nullable = false)
+	private int failedLoginAttempts;
+
+	@Column(name = "locked_until")
+	private Instant lockedUntil;
+
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private Instant createdAt;
+
+	@Column(name = "updated_at", nullable = false)
+	private Instant updatedAt;
 
 	public User() {}
 
-	public User(String name, String email, String password, Integer payDay) {
+	public User(String name, String email, String passwordHash, Integer payDay) {
 		super();
 		this.name = name;
 		this.email = email;
-		this.password = password;
+		this.passwordHash = passwordHash;
 		this.payDay = payDay;
-		this.createdAt = Instant.now();
+	}
+
+	@PrePersist
+	void onCreate() {
+		Instant now = Instant.now();
+		this.createdAt = now;
+		this.updatedAt = now;
+	}
+
+	@PreUpdate
+	void onUpdate() {
+		this.updatedAt = Instant.now();
 	}
 
 	public UUID getId() {
@@ -50,12 +90,12 @@ public class User implements Serializable {
 		this.email = email;
 	}
 
-	public String getPassword() {
-		return password;
+	public String getPasswordHash() {
+		return passwordHash;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
 	}
 
 	public Integer getPayDay() {
@@ -66,12 +106,36 @@ public class User implements Serializable {
 		this.payDay = payDay;
 	}
 
+	public int getTokenVersion() {
+		return tokenVersion;
+	}
+
+	public void incrementTokenVersion() {
+		this.tokenVersion++;
+	}
+
+	public int getFailedLoginAttempts() {
+		return failedLoginAttempts;
+	}
+
+	public void setFailedLoginAttempts(int failedLoginAttempts) {
+		this.failedLoginAttempts = failedLoginAttempts;
+	}
+
+	public Instant getLockedUntil() {
+		return lockedUntil;
+	}
+
+	public void setLockedUntil(Instant lockedUntil) {
+		this.lockedUntil = lockedUntil;
+	}
+
 	public Instant getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(Instant createdAt) {
-		this.createdAt = createdAt;
+	public Instant getUpdatedAt() {
+		return updatedAt;
 	}
 
 	@Override
@@ -79,6 +143,11 @@ public class User implements Serializable {
 		if (this==o) return true;
 		if (!(o instanceof User other)) return false;
 		return id.equals(other.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
 	}
 
 }
