@@ -19,7 +19,7 @@
 		<!-- ./mvnw spring-boot:run sobe no perfil dev; o JAR empacotado nao tem perfil padrao. -->
 		<spring-boot.run.profiles>dev</spring-boot.run.profiles>
 		<testcontainers.version>2.0.5</testcontainers.version>
-		<jacoco.version>0.8.15</jacoco.version>
+		<jacoco.version>0.8.16</jacoco.version>
 	</properties>
 
 	<dependencyManagement>
