@@ -8,14 +8,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Senha nova: de 8 caracteres ate 72 bytes em UTF-8 (limite do BCrypt).
+ * Senha nova: no minimo 8 caracteres e no maximo 72 bytes em UTF-8 (limite do BCrypt).
  */
 @Target({ ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ValidPasswordValidator.class)
 public @interface ValidPassword {
 
-	String message() default "a senha deve ter de 8 a 72 caracteres";
+	String message() default "a senha deve ter no mínimo 8 caracteres e no máximo 72 bytes (acentos e emojis ocupam mais de um)";
 
 	Class<?>[] groups() default {};
 

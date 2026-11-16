@@ -1,4 +1,4 @@
-package com.finance.app.financeapp.services;
+package com.finance.app.financeapp.security;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -7,11 +7,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 /** Relogio de teste que so anda quando o teste manda. */
-class MutableClock extends Clock {
+public class MutableClock extends Clock {
 
-	private Instant now = Instant.parse("2026-01-01T12:00:00Z");
+	private volatile Instant now = Instant.parse("2026-01-01T12:00:00Z");
 
-	void advance(Duration duration) {
+	public void advance(Duration duration) {
 		now = now.plus(duration);
 	}
 

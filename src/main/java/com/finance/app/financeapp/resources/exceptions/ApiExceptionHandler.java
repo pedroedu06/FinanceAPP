@@ -1,13 +1,20 @@
 package com.finance.app.financeapp.resources.exceptions;
 
+import com.finance.app.financeapp.exceptions.EmailAlreadyUsedException;
+import com.finance.app.financeapp.exceptions.InvalidCredentialsException;
+import com.finance.app.financeapp.exceptions.WrongPasswordException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,6 +23,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
@@ -47,6 +56,21 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	ProblemDetail handleOptimisticLock(OptimisticLockingFailureException ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
 				"O registro foi alterado por outra requisição. Tente novamente.");
+	}
+
+	// Erros de seguranca (por exemplo, de @PreAuthorize) nao sao desta classe: relancados, chegam
+	// aos filtros do Spring Security, que respondem 401 ou 403. Sem isto o handler generico
+	// abaixo os transformaria em 500.
+	@ExceptionHandler({ AccessDeniedException.class, AuthenticationException.class })
+	void handleSecurityException(RuntimeException ex) {
+		throw ex;
+	}
+
+	// Qualquer erro nao previsto vira um 500 sem detalhes internos; a causa fica so no log.
+	@ExceptionHandler(Exception.class)
+	ProblemDetail handleUnexpected(Exception ex) {
+		log.error("Erro nao tratado", ex);
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno. Tente novamente.");
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.finance.app.financeapp.resources.exceptions;
+package com.finance.app.financeapp.exceptions;
 
 public class EmailAlreadyUsedException extends RuntimeException {
 

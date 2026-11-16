@@ -14,24 +14,30 @@ import com.finance.app.financeapp.dto.DeleteAccountRequest;
 import com.finance.app.financeapp.dto.UserRegisterRequest;
 import com.finance.app.financeapp.dto.UserResponse;
 import com.finance.app.financeapp.entities.User;
+import com.finance.app.financeapp.exceptions.EmailAlreadyUsedException;
+import com.finance.app.financeapp.exceptions.WrongPasswordException;
 import com.finance.app.financeapp.repositories.UserRepository;
-import com.finance.app.financeapp.resources.exceptions.EmailAlreadyUsedException;
-import com.finance.app.financeapp.resources.exceptions.WrongPasswordException;
+import com.finance.app.financeapp.security.PasswordGuard;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 class UserServiceTest {
 
 	private static final String PASSWORD = "senha-correta-1";
 
 	private final UserRepository userRepository = mock(UserRepository.class);
+	// Custo 4 so para o teste rodar rapido.
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(4);
-	private final PasswordGuard passwordGuard = new PasswordGuard(passwordEncoder, new MutableClock());
-	private final UserService service = new UserService(userRepository, passwordEncoder, passwordGuard);
+	private final PasswordGuard passwordGuard = mock(PasswordGuard.class);
+	private final UserService service = new UserService(userRepository, passwordEncoder, passwordGuard,
+			new TransactionTemplate(mock(PlatformTransactionManager.class)));
 
 	private User existing;
 
@@ -40,6 +46,7 @@ class UserServiceTest {
 		existing = new User("Maria", "maria@example.com", passwordEncoder.encode(PASSWORD), 26);
 		when(userRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
 		when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(passwordGuard.verify(existing.getId(), PASSWORD)).thenReturn(true);
 	}
 
 	@Test
@@ -68,6 +75,19 @@ class UserServiceTest {
 	}
 
 	@Test
+	void registerTranslatesOnlyTheEmailConstraintIntoEmailAlreadyUsed() {
+		UserRegisterRequest request = new UserRegisterRequest("João", "joao@example.com", "minha-senha-123", 10);
+
+		when(userRepository.saveAndFlush(any(User.class)))
+			.thenThrow(new DataIntegrityViolationException("violates unique constraint \"UK_USERS_EMAIL\""));
+		assertThatThrownBy(() -> service.register(request)).isInstanceOf(EmailAlreadyUsedException.class);
+
+		when(userRepository.saveAndFlush(any(User.class)))
+			.thenThrow(new DataIntegrityViolationException("violates check constraint \"ck_users_pay_day\""));
+		assertThatThrownBy(() -> service.register(request)).isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
 	void changePasswordReplacesHashAndInvalidatesOldTokens() {
 		int versionBefore = existing.getTokenVersion();
 
@@ -79,7 +99,7 @@ class UserServiceTest {
 	}
 
 	@Test
-	void changePasswordWithWrongCurrentPasswordChangesNothingAndCountsAttempt() {
+	void changePasswordWithWrongCurrentPasswordChangesNothing() {
 		String hashBefore = existing.getPasswordHash();
 
 		assertThatThrownBy(() -> service.changePassword(existing.getId(),
@@ -88,7 +108,8 @@ class UserServiceTest {
 
 		assertThat(existing.getPasswordHash()).isEqualTo(hashBefore);
 		assertThat(existing.getTokenVersion()).isZero();
-		assertThat(existing.getFailedLoginAttempts()).isEqualTo(1);
+		verify(passwordGuard).verify(existing.getId(), "errada");
+		verify(userRepository, never()).saveAndFlush(any());
 	}
 
 	@Test
@@ -98,6 +119,23 @@ class UserServiceTest {
 			.isInstanceOf(WrongPasswordException.class);
 
 		assertThat(existing.getEmail()).isEqualTo("maria@example.com");
+	}
+
+	@Test
+	void changeEmailNormalizesAndInvalidatesOldTokens() {
+		UserResponse response = service.changeEmail(existing.getId(),
+				new ChangeEmailRequest(" Nova@Example.com ", PASSWORD));
+
+		assertThat(response.email()).isEqualTo("nova@example.com");
+		assertThat(existing.getTokenVersion()).isEqualTo(1);
+	}
+
+	@Test
+	void changeEmailToTheSameEmailKeepsTokensValid() {
+		service.changeEmail(existing.getId(), new ChangeEmailRequest("MARIA@example.com", PASSWORD));
+
+		assertThat(existing.getTokenVersion()).isZero();
+		verify(userRepository, never()).saveAndFlush(any());
 	}
 
 	@Test

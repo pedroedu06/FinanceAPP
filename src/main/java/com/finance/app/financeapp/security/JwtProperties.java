@@ -1,4 +1,4 @@
-package com.finance.app.financeapp.config;
+package com.finance.app.financeapp.security;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -6,9 +6,10 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-financeapp}
       POSTGRES_USER: ${DB_USER:-financeapp}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-financeapp}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      # So na propria maquina; nao expor o banco na rede.
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - financeapp-db-data:/var/lib/postgresql
     healthcheck:
@@ -20,9 +21,11 @@ services:
   adminer:
     image: adminer:5
     container_name: financeapp-adminer
+    # Opcional: so sobe com `docker compose --profile tools up -d`.
+    profiles: [tools]
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "127.0.0.1:8081:8080"
     environment:
       ADMINER_DEFAULT_SERVER: db
     depends_on:

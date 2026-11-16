@@ -1,7 +1,7 @@
-package com.finance.app.financeapp.config;
+package com.finance.app.financeapp.security;
 
 import com.finance.app.financeapp.repositories.UserRepository;
-import com.finance.app.financeapp.services.TokenService;
+import com.finance.app.financeapp.security.TokenService;
 import java.util.UUID;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;

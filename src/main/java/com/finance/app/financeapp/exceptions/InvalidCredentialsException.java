@@ -1,4 +1,4 @@
-package com.finance.app.financeapp.resources.exceptions;
+package com.finance.app.financeapp.exceptions;
 
 /**
  * Falha de login. A mensagem e sempre a mesma para nao revelar se o e-mail

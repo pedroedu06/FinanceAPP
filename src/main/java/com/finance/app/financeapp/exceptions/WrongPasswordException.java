@@ -1,4 +1,4 @@
-package com.finance.app.financeapp.resources.exceptions;
+package com.finance.app.financeapp.exceptions;
 
 /**
  * Usuario autenticado nao confirmou a senha atual em uma acao sensivel.
