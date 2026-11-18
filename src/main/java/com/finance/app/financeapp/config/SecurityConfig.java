@@ -70,8 +70,16 @@ public class SecurityConfig {
 			// Sem cookie de sessao nao ha o que um CSRF explorar: o token vai no header Authorization.
 			.csrf(csrf -> csrf.disable())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			// As paginas so carregam script, estilo e dados da propria origem, e nada inline.
+			.headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives(
+					"default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")))
 			.authorizeHttpRequests(requests -> requests
 				.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+				// Tela provisoria (src/main/resources/static): os arquivos nao contem dado nenhum;
+				// os dados continuam vindo da API, que exige token.
+				.requestMatchers(HttpMethod.GET, "/", "/index.html", "/dashboard.html", "/favicon.svg",
+						"/css/**", "/js/**")
+				.permitAll()
 				.requestMatchers(HttpMethod.POST, "/users", "/auth/login").permitAll()
 				.requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
 				.anyRequest().authenticated())

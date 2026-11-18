@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>financeapp — Entrar</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="auth-page">
+  <main class="auth">
+    <header class="brand brand--large">
+      <img src="/favicon.svg" alt="" width="40" height="40">
+      <div>
+        <h1>financeapp</h1>
+        <p>Suas finanças pessoais em um só lugar.</p>
+      </div>
+    </header>
+
+    <section class="card auth-card">
+      <div class="tabs" role="tablist" aria-label="Acesso">
+        <button type="button" class="tab" id="tab-login" role="tab" aria-selected="true" aria-controls="login-form">Entrar</button>
+        <button type="button" class="tab" id="tab-register" role="tab" aria-selected="false" aria-controls="register-form">Criar conta</button>
+      </div>
+
+      <p class="alert" id="form-alert" role="alert" hidden></p>
+
+      <form id="login-form" role="tabpanel" aria-labelledby="tab-login" novalidate>
+        <div class="field">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" name="email" type="email" autocomplete="email" required maxlength="254">
+          <p class="field-error" data-error-for="email" hidden></p>
+        </div>
+        <div class="field">
+          <label for="login-password">Senha</label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128">
+          <p class="field-error" data-error-for="password" hidden></p>
+        </div>
+        <button type="submit" class="button button--primary">Entrar</button>
+      </form>
+
+      <form id="register-form" role="tabpanel" aria-labelledby="tab-register" novalidate hidden>
+        <div class="field">
+          <label for="register-name">Nome</label>
+          <input id="register-name" name="name" type="text" autocomplete="name" required maxlength="120">
+          <p class="field-error" data-error-for="name" hidden></p>
+        </div>
+        <div class="field">
+          <label for="register-email">E-mail</label>
+          <input id="register-email" name="email" type="email" autocomplete="email" required maxlength="254">
+          <p class="field-error" data-error-for="email" hidden></p>
+        </div>
+        <div class="field">
+          <label for="register-password">Senha</label>
+          <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" aria-describedby="register-password-hint">
+          <p class="field-hint" id="register-password-hint">No mínimo 8 caracteres.</p>
+          <p class="field-error" data-error-for="password" hidden></p>
+        </div>
+        <div class="field">
+          <label for="register-payday">Dia do pagamento</label>
+          <input id="register-payday" name="payDay" type="number" inputmode="numeric" min="1" max="31" required aria-describedby="register-payday-hint">
+          <p class="field-hint" id="register-payday-hint">O dia do mês em que você recebe (1 a 31).</p>
+          <p class="field-error" data-error-for="payDay" hidden></p>
+        </div>
+        <button type="submit" class="button button--primary">Criar conta</button>
+      </form>
+    </section>
+
+    <p class="footnote">Tela provisória de desenvolvimento.</p>
+  </main>
+
+  <script type="module" src="/js/auth.js"></script>
+</body>
+</html>

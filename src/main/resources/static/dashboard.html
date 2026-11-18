@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>financeapp — Painel</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/favicon.svg" alt="" width="28" height="28">
+      <span>financeapp</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="topbar-user" id="topbar-user"></span>
+      <button type="button" class="button button--ghost" id="logout-button">Sair</button>
+    </div>
+  </header>
+
+  <main class="dashboard" id="dashboard" hidden>
+    <section class="welcome">
+      <h1 id="greeting">Olá</h1>
+      <p id="today"></p>
+    </section>
+
+    <p class="notice">
+      <strong>Painel em rascunho.</strong>
+      Os cartões com a etiqueta <span class="tag tag--sample">exemplo</span> usam números fictícios,
+      só para decidir o que o produto vai ter. Os cartões <span class="tag tag--real">conta</span> vêm da API.
+    </p>
+
+    <div class="grid">
+      <section class="card" aria-labelledby="account-title">
+        <header class="card-header">
+          <h2 id="account-title">Sua conta</h2>
+          <span class="tag tag--real">conta</span>
+        </header>
+        <dl class="details">
+          <div><dt>Nome</dt><dd id="account-name"></dd></div>
+          <div><dt>E-mail</dt><dd id="account-email"></dd></div>
+          <div><dt>Conta criada em</dt><dd id="account-created"></dd></div>
+        </dl>
+        <button type="button" class="button button--secondary" id="edit-button">Editar perfil</button>
+      </section>
+
+      <section class="card" aria-labelledby="payday-title">
+        <header class="card-header">
+          <h2 id="payday-title">Próximo pagamento</h2>
+          <span class="tag tag--real">conta</span>
+        </header>
+        <p class="big-number" id="payday-countdown"></p>
+        <p class="muted" id="payday-date"></p>
+      </section>
+
+      <section class="card" aria-labelledby="balance-title">
+        <header class="card-header">
+          <h2 id="balance-title">Saldo do mês</h2>
+          <span class="tag tag--sample">exemplo</span>
+        </header>
+        <p class="big-number" id="balance-total"></p>
+        <dl class="split">
+          <div><dt>Receitas</dt><dd class="positive" id="balance-income"></dd></div>
+          <div><dt>Despesas</dt><dd class="negative" id="balance-expense"></dd></div>
+        </dl>
+      </section>
+
+      <section class="card card--wide" aria-labelledby="transactions-title">
+        <header class="card-header">
+          <h2 id="transactions-title">Últimos lançamentos</h2>
+          <span class="tag tag--sample">exemplo</span>
+        </header>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th scope="col">Data</th><th scope="col">Descrição</th><th scope="col">Categoria</th><th scope="col" class="numeric">Valor</th></tr>
+            </thead>
+            <tbody id="transactions-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="categories-title">
+        <header class="card-header">
+          <h2 id="categories-title">Gastos por categoria</h2>
+          <span class="tag tag--sample">exemplo</span>
+        </header>
+        <ul class="bars" id="categories-list"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="goals-title">
+        <header class="card-header">
+          <h2 id="goals-title">Metas de economia</h2>
+          <span class="tag tag--sample">exemplo</span>
+        </header>
+        <ul class="bars" id="goals-list"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="bills-title">
+        <header class="card-header">
+          <h2 id="bills-title">Próximas contas a pagar</h2>
+          <span class="tag tag--sample">exemplo</span>
+        </header>
+        <ul class="list" id="bills-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="edit-dialog" aria-labelledby="edit-title">
+    <form id="edit-form" novalidate>
+      <h2 id="edit-title">Editar perfil</h2>
+      <p class="alert" id="edit-alert" role="alert" hidden></p>
+      <div class="field">
+        <label for="edit-name">Nome</label>
+        <input id="edit-name" name="name" type="text" autocomplete="name" required maxlength="120">
+        <p class="field-error" data-error-for="name" hidden></p>
+      </div>
+      <div class="field">
+        <label for="edit-payday">Dia do pagamento</label>
+        <input id="edit-payday" name="payDay" type="number" inputmode="numeric" min="1" max="31" required>
+        <p class="field-error" data-error-for="payDay" hidden></p>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="button button--ghost" id="edit-cancel">Cancelar</button>
+        <button type="submit" class="button button--primary">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/dashboard.js"></script>
+</body>
+</html>

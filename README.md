@@ -108,6 +108,25 @@ O token vai no header `Authorization: Bearer <accessToken>`. Não existe rota po
 nem listagem: cada usuário só enxerga e altera a própria conta. Depois de trocar
 e-mail ou senha é preciso fazer login de novo.
 
+## Tela provisória
+
+Com a aplicação no ar, http://localhost:8080 abre uma tela de desenvolvimento, em HTML,
+CSS e JavaScript puros (`src/main/resources/static`), sem build:
+
+- `/` — abas "Entrar" e "Criar conta";
+- `/dashboard.html` — painel com os dados reais da conta (cartões "conta") e cartões de
+  rascunho com números fictícios (cartões "exemplo"), para decidir o que o produto vai ter.
+
+Os números fictícios ficam todos em `static/js/sample-data.js`. Quando uma funcionalidade
+virar real, o cartão passa a ler da API e a entrada correspondente sai desse arquivo.
+
+O token fica no `sessionStorage` (some ao fechar a aba), as páginas não têm script nem
+estilo inline e são servidas com `Content-Security-Policy: default-src 'self'`. É uma tela
+provisória: o front definitivo deve reavaliar onde guardar o token.
+
+Ao editar um arquivo de `static/` com a aplicação rodando, rode `./mvnw resources:resources`
+(ou recompile pela IDE) para a mudança aparecer.
+
 ## Segurança
 
 - Senhas gravadas só como hash BCrypt (`password_hash`); nunca aparecem em respostas ou logs.
